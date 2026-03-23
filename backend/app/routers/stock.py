@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.services.data_fetcher import get_stock_history, get_stock_info
-from app.services.indicators import get_all_indicators   # ← MOVE TO TOP
+from app.services.indicators import get_all_indicators  
+from app.services.decision_engine import get_decision
 
 router = APIRouter(
     prefix="/api/stock",
@@ -59,6 +60,18 @@ def stock_indicators(ticker: str, period: str = "1y"):
         raise HTTPException(
             status_code=404,
             detail=f"Could not calculate indicators for '{ticker}'"
+        )
+
+    return data
+
+@router.get("/{ticker}/decision")
+def stock_decision(ticker: str):
+    data = get_decision(ticker.upper())
+
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Could not generate decision for '{ticker}'"
         )
 
     return data
