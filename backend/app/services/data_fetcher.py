@@ -1,44 +1,56 @@
 import yfinance as yf
 import pandas as pd
-from datetime import datetime
 
-def get_stock_history(ticker: str, period: str = "1y"):
-    """
-    Fetch historical OHLCV data for a given stock ticker.
-    
-    ticker: e.g. "TCS.NS" or "AAPL"
-    period: "1mo", "3mo", "6mo", "1y", "2y"
-    """
+def get_stock_history(ticker: str, period: str = "1y", interval: str = None):
     try:
         stock = yf.Ticker(ticker)
-        df = stock.history(period=period)
+
+        if interval is None:
+            if period == "1d":
+                interval = "5m"
+            elif period == "5d":
+                interval = "1h"
+            elif period == "1mo":
+                interval = "1h"
+            else:
+                interval = "1d"
+
+        if period == "1d":
+            df = stock.history(period="1d", interval="5m")
+        else:
+            df = stock.history(period=period, interval=interval)
 
         if df.empty:
             return None
 
-        # Reset index so Date becomes a column
         df = df.reset_index()
 
-        # Keep only the columns we need
+        date_col = "Datetime" if "Datetime" in df.columns else "Date"
+        df = df.rename(columns={date_col: "Date"})
+
+        df["Date"] = pd.to_datetime(df["Date"])
+
+        if hasattr(df["Date"].dt, "tz") and df["Date"].dt.tz is not None:
+            df["Date"] = df["Date"].dt.tz_localize(None)
+
+        if period == "1d":
+            df["Date"] = df["Date"].dt.strftime("%H:%M")
+        elif period in ["5d", "1mo"]:
+            df["Date"] = df["Date"].dt.strftime("%d %b %H:%M")
+        else:
+            df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
+
         df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
-
-        # Format date to string so it can be sent as JSON
-        df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
-
-        # Round prices to 2 decimal places
         df = df.round(2)
 
         return df.to_dict(orient="records")
 
     except Exception as e:
-        print(f"Error fetching data for {ticker}: {e}")
+        print(f"Error fetching history for {ticker}: {e}")
         return None
 
 
 def get_stock_info(ticker: str):
-    """
-    Fetch basic stock info — name, sector, current price etc.
-    """
     try:
         stock = yf.Ticker(ticker)
         info = stock.info

@@ -15,21 +15,26 @@ export default function SearchBar({ onSearch }) {
   }
 
   return (
-    <div className="flex gap-3 mb-8">
-      <div className="flex-1 flex items-center bg-gray-900 border border-gray-700 rounded-xl px-4 gap-3">
-        <Search className="text-gray-400 w-5 h-5" />
+    <div className="flex gap-3 mb-10">
+      <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-xl px-5 gap-3 focus-within:border-emerald-400/50 transition-all duration-200">
+        <Search className="text-white/30 w-4 h-4 flex-shrink-0" />
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search stock... e.g. TCS.NS, AAPL, RELIANCE.NS"
-          className="flex-1 bg-transparent py-4 text-white placeholder-gray-500 outline-none text-lg"
+          placeholder="Enter ticker symbol — TCS.NS, AAPL, RELIANCE.NS..."
+          className="flex-1 bg-transparent py-4 text-white placeholder-white/25 outline-none text-base"
         />
+        {input && (
+          <button onClick={() => setInput('')} className="text-white/30 hover:text-white/60 transition text-xl leading-none">
+            ×
+          </button>
+        )}
       </div>
       <button
         onClick={handleSearch}
-        className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition text-lg"
+        className="px-8 py-4 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold rounded-xl transition-all duration-200 text-sm tracking-wide"
       >
         Analyze
       </button>

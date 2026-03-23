@@ -6,30 +6,42 @@ export default function App() {
   const [ticker, setTicker] = useState(null)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-emerald-400">Alpha</span>
-          <span className="text-2xl font-bold text-white">Signal</span>
-          <span className="ml-2 text-xs bg-emerald-400 text-black px-2 py-0.5 rounded-full font-semibold">AI</span>
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <nav className="border-b border-white/5 px-8 py-4 flex items-center justify-between backdrop-blur-sm sticky top-0 z-50 bg-[#0a0a0f]/90">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center">
+            <span className="text-black font-black text-sm">A</span>
+          </div>
+          <span className="text-xl font-bold tracking-tight">
+            Alpha<span className="text-emerald-400">Signal</span>
+          </span>
+          <span className="text-xs bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 px-2 py-0.5 rounded-full font-medium">
+            AI
+          </span>
         </div>
-        <span className="text-gray-400 text-sm">Stock Prediction & Decision Support</span>
+        <span className="text-white/30 text-sm hidden md:block">
+          Stock Prediction & Decision Support
+        </span>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-10">
         <SearchBar onSearch={setTicker} />
         {ticker && <Dashboard ticker={ticker} />}
         {!ticker && (
-          <div className="flex flex-col items-center justify-center mt-32 gap-4">
-            <p className="text-6xl">📈</p>
-            <h2 className="text-2xl font-semibold text-gray-300">Search any stock to get started</h2>
-            <p className="text-gray-500">Try TCS.NS, RELIANCE.NS, AAPL, TSLA</p>
-            <div className="flex gap-3 mt-4">
-              {['TCS.NS', 'RELIANCE.NS', 'AAPL', 'NVDA'].map(s => (
+          <div className="flex flex-col items-center justify-center mt-28 gap-6">
+            <div className="w-16 h-16 bg-emerald-400/10 border border-emerald-400/20 rounded-2xl flex items-center justify-center">
+              <span className="text-3xl">📈</span>
+            </div>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">Analyze any stock instantly</h2>
+              <p className="text-white/40">Powered by LSTM predictions and real-time technical analysis</p>
+            </div>
+            <div className="flex gap-2 mt-2 flex-wrap justify-center">
+              {['TCS.NS', 'RELIANCE.NS', 'INFY.NS', 'AAPL', 'NVDA', 'TSLA'].map(s => (
                 <button
                   key={s}
                   onClick={() => setTicker(s)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition"
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-all duration-200"
                 >
                   {s}
                 </button>

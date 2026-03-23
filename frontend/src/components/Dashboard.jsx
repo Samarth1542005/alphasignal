@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getStockSummary, getStockHistory } from '../api/stockApi'
+import { getStockSummary } from '../api/stockApi'
 import StockInfo from './StockInfo'
 import DecisionPanel from './DecisionPanel'
 import PriceChart from './PriceChart'
@@ -7,7 +7,6 @@ import IndicatorsPanel from './IndicatorsPanel'
 
 export default function Dashboard({ ticker }) {
   const [summary, setSummary] = useState(null)
-  const [history, setHistory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -16,16 +15,11 @@ export default function Dashboard({ ticker }) {
       setLoading(true)
       setError(null)
       setSummary(null)
-      setHistory(null)
       try {
-        const [summaryData, historyData] = await Promise.all([
-          getStockSummary(ticker),
-          getStockHistory(ticker)
-        ])
+        const summaryData = await getStockSummary(ticker)
         setSummary(summaryData)
-        setHistory(historyData)
       } catch (err) {
-        setError(`Could not find stock "${ticker}". Please check the ticker symbol.`)
+        setError(`Could not find data for "${ticker}". Please check the ticker symbol.`)
       } finally {
         setLoading(false)
       }
@@ -35,23 +29,25 @@ export default function Dashboard({ ticker }) {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center mt-32 gap-4">
-      <div className="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-gray-400 text-lg">Analyzing {ticker}...</p>
+      <div className="w-10 h-10 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+      <p className="text-white/30 text-sm">Analyzing {ticker}...</p>
     </div>
   )
 
   if (error) return (
     <div className="flex items-center justify-center mt-32">
-      <p className="text-red-400 text-lg">{error}</p>
+      <div className="bg-red-400/5 border border-red-400/20 rounded-xl px-6 py-4">
+        <p className="text-red-400 text-sm">{error}</p>
+      </div>
     </div>
   )
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <StockInfo info={summary.info} />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <PriceChart history={history} />
+          <PriceChart ticker={ticker} currency={summary.info.currency} />
         </div>
         <div>
           <DecisionPanel summary={summary} />
