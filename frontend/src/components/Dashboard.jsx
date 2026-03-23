@@ -4,6 +4,7 @@ import StockInfo from './StockInfo'
 import DecisionPanel from './DecisionPanel'
 import PriceChart from './PriceChart'
 import IndicatorsPanel from './IndicatorsPanel'
+import PredictionPanel from "./PredictionPanel";
 
 export default function Dashboard({ ticker }) {
   const [summary, setSummary] = useState(null)
@@ -54,6 +55,7 @@ export default function Dashboard({ ticker }) {
         </div>
       </div>
       <IndicatorsPanel indicators={summary.indicators} />
+      <PredictionPanel ticker={ticker} />
     </div>
   )
 }

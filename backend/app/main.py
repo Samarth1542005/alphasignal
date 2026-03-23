@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import APP_NAME
-from app.routers import stock          # ← ADD THIS
+from app.routers import stock         
+from app.routers import prediction
 
 app = FastAPI(
     title=APP_NAME,
@@ -32,3 +33,5 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+app.include_router(prediction.router)
