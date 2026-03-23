@@ -1,0 +1,28 @@
+# Virtual Environment
+backend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment variables (NEVER push secrets)
+.env
+
+# ML Models (too large for GitHub)
+backend/ml/saved_models/
+
+# Node modules
+node_modules/
+
+# Mac stuff
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Build files
+dist/
+build/
