@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import APP_NAME
 from app.routers import stock         
 from app.routers import prediction
+from app.routers import sentiment
 
 app = FastAPI(
     title=APP_NAME,
@@ -35,3 +36,4 @@ def health():
     return {"status": "healthy"}
 
 app.include_router(prediction.router)
+app.include_router(sentiment.router)
