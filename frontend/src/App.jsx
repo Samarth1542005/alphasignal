@@ -1,9 +1,44 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from './lib/supabase'
+import LandingPage from './components/LandingPage'
+import AuthPage from './components/AuthPage'
 import SearchBar from './components/SearchBar'
 import Dashboard from './components/Dashboard'
 
 export default function App() {
+  const [view, setView] = useState('landing')
+  const [user, setUser] = useState(null)
   const [ticker, setTicker] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user)
+        setView('app')
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+        setView('app')
+      } else {
+        setUser(null)
+        setView('landing')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setTicker(null)
+    setView('landing')
+  }
+
+  if (view === 'landing') return <LandingPage onGetStarted={() => setView('auth')} />
+  if (view === 'auth') return <AuthPage onAuth={(user) => { setUser(user); setView('app') }} />
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
@@ -19,9 +54,17 @@ export default function App() {
             AI
           </span>
         </div>
-        <span className="text-white/30 text-sm hidden md:block">
-          Stock Prediction & Decision Support
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-white/30 text-sm hidden md:block">
+            {user?.email}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white rounded-lg text-sm transition-all"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
