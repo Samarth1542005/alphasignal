@@ -26,3 +26,8 @@ export const getSentiment = async (ticker) => {
   const response = await axios.get(`${BASE_URL}/stock/${ticker}/sentiment`);
   return response.data;
 };
+
+export const getBacktest = async (ticker) => {
+  const response = await axios.get(`${BASE_URL}/stock/${ticker}/backtest`);
+  return response.data;
+};

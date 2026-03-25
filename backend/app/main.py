@@ -37,3 +37,6 @@ def health():
 
 app.include_router(prediction.router)
 app.include_router(sentiment.router)
+
+from app.routers import backtest
+app.include_router(backtest.router)
