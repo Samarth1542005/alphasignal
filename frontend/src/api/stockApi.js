@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://localhost:8000/api'
+const BASE_URL = 'https://samarth1542005-stock-predictor-api.hf.space/api'
 
 export const getStockSummary = async (ticker) => {
   const response = await axios.get(`${BASE_URL}/stock/${ticker}/summary`)
