@@ -2,6 +2,17 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import math
+import concurrent.futures
+
+
+def _fetch_history_with_timeout(ticker: str, period: str, timeout: int = 20):
+    """Fetch stock history with a hard timeout to avoid hanging requests."""
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(lambda: yf.Ticker(ticker).history(period=period))
+        try:
+            return future.result(timeout=timeout)
+        except concurrent.futures.TimeoutError:
+            return None
 
 def clean_nan(value):
     """Replace NaN/Inf with None so JSON doesn't crash"""
@@ -82,10 +93,9 @@ def get_all_indicators(ticker: str, period: str = "1y"):
     ALL indicators in one go.
     """
     try:
-        stock = yf.Ticker(ticker)
-        df = stock.history(period=period)
+        df = _fetch_history_with_timeout(ticker, period, timeout=20)
 
-        if df.empty:
+        if df is None or df.empty:
             return None
 
         closes = df["Close"]

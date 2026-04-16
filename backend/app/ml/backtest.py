@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 
 from .train import (
     get_cache_paths, is_cached, train_and_cache,
-    download_and_engineer, SEQ_LEN, N_FEATURES
+    download_and_engineer, SEQ_LEN, N_FEATURES, FEAT_COLS
 )
 
 
@@ -20,13 +20,12 @@ def run_backtest(ticker: str):
     else:
         model, close_scaler, feat_scaler, df = train_and_cache(ticker)
 
-    feat_cols       = ["Close", "Volume", "RSI", "MACD", "MACD_Signal"]
-    scaled_features = feat_scaler.transform(df[feat_cols].values)
+    scaled_features = feat_scaler.transform(df[FEAT_COLS].values)
     actual_prices   = df["Close"].values.flatten()
     actual_dates    = df.index
 
     results = []
-    for i in range(30, 0, -1):
+    for i in range(90, 0, -1):
         end_idx = len(scaled_features) - i
         if end_idx < SEQ_LEN:
             continue
@@ -58,6 +57,11 @@ def run_backtest(ticker: str):
     )
     directional_accuracy = round(correct_dir / (len(results) - 1) * 100, 1) if len(results) > 1 else 0
 
+    within_2pct = round(
+        sum(1 for r in results if abs(r["actual"] - r["predicted"]) / r["actual"] < 0.02)
+        / len(results) * 100, 1
+    )
+
     verdict = (
         "good"     if directional_accuracy >= 60 and mape <= 2 else
         "moderate" if directional_accuracy >= 50 and mape <= 5 else
@@ -70,6 +74,7 @@ def run_backtest(ticker: str):
         "mae":                  mae,
         "mape":                 mape,
         "directional_accuracy": directional_accuracy,
+        "within_2pct":          within_2pct,
         "verdict":              verdict,
         "data_points":          results,
     }

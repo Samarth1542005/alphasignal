@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 
 from .train import (
     get_cache_paths, is_cached, train_and_cache,
-    download_and_engineer, SEQ_LEN, N_FEATURES
+    download_and_engineer, SEQ_LEN, N_FEATURES, FEAT_COLS
 )
 
 
@@ -30,11 +30,10 @@ def get_predictions(ticker: str, sentiment_score: float = 0.0):
     """
     model, close_scaler, feat_scaler, df = _load_artifacts(ticker)
 
-    feat_cols       = ["Close", "Volume", "RSI", "MACD", "MACD_Signal"]
-    scaled_features = feat_scaler.transform(df[feat_cols].values)
+    scaled_features = feat_scaler.transform(df[FEAT_COLS].values)
 
     current_window  = scaled_features[-SEQ_LEN:].copy()
-    last_aux        = scaled_features[-1, 1:].copy()   # Volume, RSI, MACD, Signal
+    last_aux        = scaled_features[-1, 1:].copy()   # Volume, RSI, MACD, Signal, BB_PCT, VOLATILITY, VOL_RATIO
     raw_preds       = []
 
     for _ in range(7):

@@ -12,9 +12,10 @@ from tensorflow.keras.optimizers import Adam
 
 # ── Constants ────────────────────────────────────────────────────────────────
 SEQ_LEN    = 120        # 2x original (60), still lightweight
-N_FEATURES = 5          # Close, Volume, RSI, MACD, MACD_Signal
+N_FEATURES = 8          # Close, Volume, RSI, MACD, MACD_Signal, BB_PCT, VOLATILITY, VOL_RATIO
 DATA_PERIOD = "3y"      # good balance of history vs. download/training time
 CACHE_DIR  = os.path.join(os.path.dirname(__file__), "..", "cache", "models")
+FEAT_COLS  = ["Close", "Volume", "RSI", "MACD", "MACD_Signal", "BB_PCT", "VOLATILITY", "VOL_RATIO"]
 
 
 # ── Cache helpers (daily key so model auto-refreshes each day) ───────────────
@@ -31,17 +32,34 @@ def is_cached(ticker):
 
 # ── Feature engineering ──────────────────────────────────────────────────────
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
-    close = df["Close"]
+    close  = df["Close"]
+    volume = df["Volume"]
 
+    # RSI (14-period)
     delta = close.diff()
     gain  = delta.clip(lower=0).rolling(14).mean()
     loss  = (-delta.clip(upper=0)).rolling(14).mean()
     df["RSI"] = 100 - (100 / (1 + gain / (loss + 1e-9)))
 
+    # MACD (12/26/9)
     ema12 = close.ewm(span=12, adjust=False).mean()
     ema26 = close.ewm(span=26, adjust=False).mean()
     df["MACD"]        = ema12 - ema26
     df["MACD_Signal"] = df["MACD"].ewm(span=9, adjust=False).mean()
+
+    # Bollinger Band position: 0 = at lower band, 1 = at upper band
+    sma20      = close.rolling(20).mean()
+    std20      = close.rolling(20).std()
+    upper      = sma20 + 2 * std20
+    lower      = sma20 - 2 * std20
+    band_range = (upper - lower).replace(0, np.nan)
+    df["BB_PCT"] = ((close - lower) / band_range).clip(0, 1)
+
+    # 14-day rolling volatility (std of daily returns)
+    df["VOLATILITY"] = close.pct_change().rolling(14).std()
+
+    # Volume ratio: current vs 20-day average (clipped to avoid extremes)
+    df["VOL_RATIO"] = (volume / volume.rolling(20).mean()).clip(0, 5)
 
     return df.dropna()
 
@@ -86,11 +104,10 @@ def train_and_cache(ticker: str):
     if len(df) < SEQ_LEN + 50:
         raise ValueError(f"Not enough data for {ticker}")
 
-    feat_cols    = ["Close", "Volume", "RSI", "MACD", "MACD_Signal"]
     feat_scaler  = MinMaxScaler()
     close_scaler = MinMaxScaler()
 
-    scaled_features = feat_scaler.fit_transform(df[feat_cols].values)
+    scaled_features = feat_scaler.fit_transform(df[FEAT_COLS].values)
     scaled_close    = close_scaler.fit_transform(df[["Close"]].values)
 
     X, y  = build_sequences(scaled_features, scaled_close)
