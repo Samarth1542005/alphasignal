@@ -16,17 +16,20 @@ export default function PriceChart({ ticker, currency }) {
   const [selectedPeriod, setSelectedPeriod] = useState('1y')
   const [history, setHistory] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const symbol = currency === 'INR' ? '₹' : '$'
 
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true)
+      setError(null)
+      setHistory(null)
       try {
         const data = await getStockHistory(ticker, selectedPeriod)
         setHistory(data)
       } catch (err) {
-        console.error(err)
+        setError('Failed to load price history.')
       } finally {
         setLoading(false)
       }
@@ -109,6 +112,10 @@ export default function PriceChart({ ticker, currency }) {
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="w-6 h-6 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-white/20 text-sm">{error}</p>
         </div>
       ) : data.length === 0 ? (
         <div className="flex items-center justify-center h-64">

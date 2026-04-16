@@ -52,6 +52,8 @@ def stock_summary(ticker: str, period: str = "1y"):
     if decision_data is None:
         raise HTTPException(status_code=404, detail=f"Could not generate summary for '{ticker}'")
     info_data = get_stock_info(ticker)
+    if info_data is None:
+        raise HTTPException(status_code=404, detail=f"Could not fetch info for '{ticker}'. The ticker may be invalid.")
     return {
         "ticker": ticker,
         "info": info_data,

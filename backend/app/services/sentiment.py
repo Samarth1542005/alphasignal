@@ -55,7 +55,7 @@ def _score_one(text: str):
 
 # ── Fetchers ────────────────────────────────────────────────────────────────────
 def _fetch_newsapi(ticker: str, company_name: str = "") -> List[dict]:
-    api_key = os.getenv("NEWSAPI_KEY", "")
+    api_key = os.getenv("NEWS_API_KEY", "")
     if not api_key:
         return []
     query = urllib.parse.quote(f"{ticker} OR {company_name}" if company_name else ticker)

@@ -1,4 +1,6 @@
 export default function IndicatorsPanel({ indicators }) {
+  if (!indicators) return null
+
   const rsiInterpretation = (rsi) => {
     if (rsi < 30) return { text: 'Oversold — Stock has fallen sharply. Potential bounce back opportunity.', color: 'text-emerald-400', tag: 'Oversold', tagColor: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' }
     if (rsi > 70) return { text: 'Overbought — Stock has risen too fast. Possible pullback ahead.', color: 'text-red-400', tag: 'Overbought', tagColor: 'bg-red-400/10 text-red-400 border-red-400/20' }

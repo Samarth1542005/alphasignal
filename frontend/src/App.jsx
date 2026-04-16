@@ -32,7 +32,11 @@ export default function App() {
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch (_) {
+      // Ignore 403s from expired tokens — local session is cleared regardless
+    }
     setTicker(null)
     setView('landing')
   }

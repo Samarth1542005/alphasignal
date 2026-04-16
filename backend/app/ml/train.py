@@ -22,7 +22,7 @@ FEAT_COLS  = ["Close", "Volume", "RSI", "MACD", "MACD_Signal", "BB_PCT", "VOLATI
 def get_cache_paths(ticker):
     safe  = ticker.replace(".", "_")
     today = date.today().strftime("%Y%m%d")
-    base  = os.path.join(CACHE_DIR, f"{safe}_{today}")
+    base  = os.path.join(CACHE_DIR, f"{safe}_{today}_v{N_FEATURES}")
     return base + "_model.keras", base + "_scaler.pkl", base + "_feat_scaler.pkl"
 
 def is_cached(ticker):

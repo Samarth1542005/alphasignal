@@ -11,8 +11,13 @@ __pycache__/
 # Environment variables (NEVER push secrets)
 .env
 
-# ML Models (too large for GitHub)
+# ML Models / cache (too large for GitHub)
 backend/ml/saved_models/
+backend/app/cache/
+
+# Local env overrides (never push — contains localhost URLs or secrets)
+frontend/.env.local
+backend/.env
 
 # Node modules
 node_modules/

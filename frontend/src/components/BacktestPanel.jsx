@@ -78,7 +78,7 @@ const BacktestPanel = ({ ticker }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-white font-semibold text-lg">Model Backtest</h2>
-          <p className="text-gray-500 text-sm mt-0.5">Predicted vs actual — last 30 days</p>
+          <p className="text-gray-500 text-sm mt-0.5">Predicted vs actual — last 90 days</p>
         </div>
         {data && verdict && (
           <span className={`text-xs px-3 py-1 rounded-full border ${verdict.color} ${verdict.bg} ${verdict.border}`}>
@@ -106,8 +106,8 @@ const BacktestPanel = ({ ticker }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {[
               { label: "RMSE", value: `₹${data.rmse}`, desc: "Avg price error", color: "text-blue-400" },
-              { label: "MAE", value: `₹${data.mae}`, desc: "Mean absolute error", color: "text-purple-400" },
               { label: "MAPE", value: `${data.mape}%`, desc: "% error from actual", color: "text-amber-400" },
+              { label: "Within 2%", value: `${data.within_2pct}%`, desc: "Predictions within 2% of actual", color: "text-purple-400" },
               { label: "Directional", value: `${data.directional_accuracy}%`, desc: "Up/down accuracy", color: "text-emerald-400" },
             ].map((m, i) => (
               <div key={i} className="bg-[#13131a] border border-[#1e1e2e] rounded-xl p-4">
@@ -127,7 +127,7 @@ const BacktestPanel = ({ ticker }) => {
                   tick={{ fill: "#6b7280", fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
-                  interval={4}
+                  interval={12}
                 />
                 <YAxis
                   domain={[minPrice, maxPrice]}

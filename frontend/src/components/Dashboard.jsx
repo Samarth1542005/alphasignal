@@ -20,9 +20,20 @@ export default function Dashboard({ ticker }) {
       setSummary(null)
       try {
         const summaryData = await getStockSummary(ticker)
+        if (!summaryData?.info) {
+          throw new Error('incomplete_data')
+        }
         setSummary(summaryData)
       } catch (err) {
-        setError(`Could not find data for "${ticker}". Please check the ticker symbol.`)
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          setError(`Request timed out for "${ticker}". The server may be starting up — please try again in 30 seconds.`)
+        } else if (err.response?.status === 404) {
+          setError(`"${ticker}" not found. Please check the ticker symbol (e.g. AAPL, RELIANCE.NS, TCS.NS).`)
+        } else if (err.message === 'incomplete_data') {
+          setError(`Could not fetch complete data for "${ticker}". The ticker may be invalid or delisted.`)
+        } else {
+          setError(`Could not load data for "${ticker}". Please try again.`)
+        }
       } finally {
         setLoading(false)
       }
@@ -34,6 +45,9 @@ export default function Dashboard({ ticker }) {
     <div className="flex flex-col items-center justify-center mt-32 gap-4">
       <div className="w-10 h-10 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
       <p className="text-white/30 text-sm">Analyzing {ticker}...</p>
+      <p className="text-white/20 text-xs max-w-xs text-center">
+        First request may take up to 45 seconds while the server wakes up.
+      </p>
     </div>
   )
 

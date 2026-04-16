@@ -61,38 +61,58 @@ def _fetch_info_with_timeout(stock, timeout: int = 12):
             return {}
 
 
+def _safe_fi(fi, *attrs):
+    """Try multiple attribute names on fast_info, return first non-None non-zero value."""
+    for attr in attrs:
+        try:
+            val = getattr(fi, attr, None)
+            if val is not None and val != 0:
+                return val
+        except Exception:
+            pass
+    return None
+
+
 def get_stock_info(ticker: str):
     try:
         stock = yf.Ticker(ticker)
 
-        # fast_info is lightweight — no heavy HTTP calls
-        fi   = stock.fast_info
-        # info can hang; cap it at 12 seconds then fall back to empty dict
+        # fast_info is lightweight and doesn't hang
+        fi = stock.fast_info
+        # info can hang for slow tickers; cap at 12 s then fall back to {}
         info = _fetch_info_with_timeout(stock, timeout=12)
+
+        # Try both snake_case and camelCase attribute names across yfinance versions
+        current_price = (
+            _safe_fi(fi, "last_price", "lastPrice", "regularMarketPrice")
+            or info.get("currentPrice", info.get("regularMarketPrice", 0))
+        )
+
+        # If we still have no price, the ticker is invalid — return None
+        if not current_price:
+            print(f"No price found for {ticker} — likely invalid ticker")
+            return None
 
         return {
             "ticker": ticker,
-            "name": info.get("longName", ticker),
+            "name": info.get("longName", info.get("shortName", ticker)),
             "sector": info.get("sector", "N/A"),
-            "current_price": (
-                getattr(fi, "last_price", None)
-                or info.get("currentPrice", info.get("regularMarketPrice", 0))
-            ),
+            "current_price": current_price,
             "currency": (
-                getattr(fi, "currency", None)
+                _safe_fi(fi, "currency")
                 or info.get("currency", "USD")
             ),
             "market_cap": (
-                getattr(fi, "market_cap", None)
+                _safe_fi(fi, "market_cap", "marketCap")
                 or info.get("marketCap", 0)
             ),
             "pe_ratio": info.get("trailingPE", 0),
             "52_week_high": (
-                getattr(fi, "year_high", None)
+                _safe_fi(fi, "year_high", "yearHigh", "fiftyTwoWeekHigh")
                 or info.get("fiftyTwoWeekHigh", 0)
             ),
             "52_week_low": (
-                getattr(fi, "year_low", None)
+                _safe_fi(fi, "year_low", "yearLow", "fiftyTwoWeekLow")
                 or info.get("fiftyTwoWeekLow", 0)
             ),
         }
